@@ -1,11 +1,39 @@
 <?php
 
-// AQUI CHAMA O ARQUIVO DE CONEXÃO AO BANCO DE DADOS COM O PHP
     include('conexao/banco.php');
 
-// PEGANDO TODOS OS DADOS DA TABELA PRODUTO
-    $query = "SELECT * FROM produto";
-    $result = $conn->query($query);
+    if(isset($_POST['botao']) && !empty($_POST['email']) && !empty($_POST['senha'])){
+
+        $email = $_POST['email'];
+        $senha = $_POST['senha'];
+
+        $stmt = $conn->prepare("SELECT * FROM usuario WHERE email = :email");
+        $stmt->bindParam(':email', $email);
+        $stmt->execute();
+        
+
+        if($usuario['email'] == $email && password_verify($senha, $usuario['senha'])){
+
+            session_start();
+
+            $_SESSION['usuario'] = $usuario['id'];
+            header('Location:telaProdutos.php');
+            exit();
+
+        }
+        elseif($usuario['email'] != $email){
+            $mensagem_erro = "Email não encontrado";
+        }
+        elseif($usuario['senha']){
+            $mensagem_erro = "Senha incorreta";
+
+        }
+        elseif($usuario['id'] < 1){
+            $mensagem_erro = "Nenhum usuario ainda cadastrado";
+        }
+
+
+    }
 
 
 ?>
@@ -14,87 +42,31 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <title>Document</title>
 </head>
 <body>
-    <h1 class="cabeca">Lista de Produtos</h1>
-    <button onclick="location.href='carrinho.php'"><span class='material-symbols-outlined'>shopping_cart</span>
-    <p>CARRINHO</p>
-</button>
-    <table >
-        <thead>
-            <tr>
-                <!-- CRIAÇÃO DA TABELA -->
-                <th>Código</th>
-                <th>Nome</th>
-                <th>Categoria</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
+    <h1>Tela de Login</h1>
+    <h4>Acesse a sua conta</h4>
+    <form action="index.php" method = "POST">
+
+        <label for="email">Email:</label>
+        <input type="email" name="email" id="email">
+        <label for="senha">Senha:</label>
+        <input type="password" name="senha" id="senha">
+
+        <button type="submit" name="botao">Entrar</button>
 
         <?php
-
-    // ARMAZENANDO OS DADOS DO BANCO EM UMA VARIÁVEL E ABRINDO UM LOOP PARA CADA DADO INSERIDO NO BANCO APARECER NA TABELA
-
-        if($result->num_rows > 0){
-        while($row = $result->fetch_assoc()){
-
-           echo" <tr data-id = ". $row['id']. ">";
-           echo " <td>". $row['codigo'] . "</td>";
-           echo   "<td>" . $row['nomeProduto'] . "</td>";
-           echo  " <td>" . $row['categoria'] . "</td>";?>
-          <td> <button onclick="adicionarCarrinho('<?php echo $row['id']?>')">
-           <span class='material-symbols-outlined'>shopping_cart</span>
-           </button> </td>
-           <?php
-           echo "</tr>";
+        
+            if(isset($mensagem_erro)){
+                echo "<p>". $mensagem_erro ."</p>";
             }
-        }
-            ?>
-        </tbody>
-    </table>
+        
+        ?>
 
+    </form>
+    <a href="cadastrar.php">Novo por aqui? Cadastre sua conta</a>
 </body>
-
-<script>
-
-// FUNÇÃO PARA PEGAR O DADO DA COLUNA DO PRODUTO O QUAL O BOTÃO DO CARRINHO FOI APERTADO PARA EVIAR PARA OUTRO ARQUIVO PHP
-// FEITO COM AJAX
-
-function adicionarCarrinho(id) {
-
-    var url = "adicionarCarrinho.php?id=" + encodeURIComponent(id);
-
-    fetch(url, {
-        method: 'GET'
-    })
-    .then(function(response) {
-        if (!response.ok) {
-            throw new Error('Erro na solicitação');
-        }
-        return response.json(); // Analisa a resposta como JSON
-    })
-    .then(function(data) {
-        // Verifique o status da resposta
-        if (data.status === "success") {
-            // Exibe um alerta de sucesso
-            alert(data.message);
-        } else {
-            // Exibe um alerta de erro
-            alert(data.message);
-        }
-    })
-    .catch(function(error) {
-        console.error('Erro:', error);
-    });
-}
-
-    </script>
-
-
-
 </html>

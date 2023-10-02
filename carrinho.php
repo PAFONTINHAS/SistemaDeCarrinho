@@ -21,6 +21,7 @@
     <title>Document</title>
 </head>
 <body>
+    <a href="telaProdutos.php">Tela de Produtos</a>
     <h1>Seu Carrinho</h1>
     <table >
         <thead>
