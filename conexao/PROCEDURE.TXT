@@ -1,0 +1,22 @@
+/* DEPOIS DE CRIAR O BANCO DE DADOS COM SUAS RESPECTIVAS TABELAS CRIE ESSA PROCEDURE PARA A ADIÇÃO DE PRODUTOS AO CARRINHO*/
+
+DELIMITER //
+
+CREATE PROCEDURE atualizarQuantidade(IN qtd INT, IN id INT)
+BEGIN
+    DECLARE id_produto_existente INT;
+
+    -- Verifica se o produto já existe no carrinho
+    SELECT id_produto INTO id_produto_existente FROM carrinho WHERE id_produto = id LIMIT 1;
+
+    IF id_produto_existente IS NOT NULL THEN
+        -- O produto já existe, então atualize a quantidade
+        UPDATE carrinho SET quantidade = quantidade + qtd WHERE id_produto = id;
+    ELSE
+        -- O produto não existe, então insira-o no carrinho
+        INSERT INTO carrinho (id_produto, quantidade) VALUES (id, qtd);
+    END IF;
+END //
+
+DELIMITER ;
+
